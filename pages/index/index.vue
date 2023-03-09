@@ -35,8 +35,12 @@
 </template>
 
 <script>
-	// #ifdef APP-ANDROID
-	const signer = uni.requireNativePlugin("SignerModule");
+	let signer = undefined;
+	// #ifdef APP-PLUS
+	signer = uni.requireNativePlugin("Signer");
+	// #endif
+	// #ifdef H5 || MP
+	console.log('暂不支持...');
 	// #endif
 	export default {
 		data() {
@@ -47,21 +51,23 @@
 			}
 		},
 		onLoad() {
-			// #ifdef APP-ANDROID
-			/**
-			 * signToHex 签名方法导出十六进制签名摘要
-			 * 参数 msg: 签名内容
-			 * 返回: 结果对象; 若成功 result.data 字段为十六进制签名摘要
-			 */
-			const result = signer.signToHex(this.msg);
-			if (!result || result.code != undefined) {
-				console.log('签名失败: '+ result.msg);
-				return;
+			if (signer) {
+				/**
+				 * signToHex 签名方法导出十六进制签名摘要
+				 * 参数 msg: 签名内容
+				 * 返回: 结果对象; 若成功 result.data 字段为十六进制签名摘要
+				 */
+				const result = signer.signToHex(this.msg);
+				if (!result || result.code != undefined) {
+					console.log('签名失败: '+ result.msg);
+					return;
+				}
+				const {data} = result;
+				console.log(`签名摘要: ${data}`);
+				this.digest = data;
+			}else {
+				this.digest = '暂不支持，请联系开发者';
 			}
-			const {data} = result;
-			console.log(`签名摘要: ${data}`);
-			this.digest = data;
-			// #endif
 		},
 		methods: {
 			handleCopyBtnClick(e){
